@@ -1,0 +1,45 @@
+version: 2.1
+orbs:
+  python: circleci/python@1.5.0
+  #browser-tools: circleci/browser-tools@1.2.4
+
+jobs:
+  build: 
+    docker:
+      - image: cimg/python:3.10.2
+        auth:
+          username: mydockerhub-user
+          password: $DOCKERHUB_PASSWORD  
+    resource_class: small
+
+    steps:
+      - checkout
+      - run: mkdir test-reports
+   
+      - python/install-packages:
+          pkg-manager: pip
+          pip-dependency-file: requirements.txt  
+          
+      - run:
+          name: Run tests
+          command: python bot.py
+          
+      - store_test_results:
+          path: test-reports/
+
+      - store_artifacts:
+          path: test-reports/
+          destination: tr1
+
+
+workflows:
+  version: 2
+  InitialBuild:
+    jobs:
+     - build:
+         filters:
+           branches:
+             only:
+               - master
+      
+        
